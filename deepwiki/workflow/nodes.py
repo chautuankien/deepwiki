@@ -1,6 +1,6 @@
 from loguru import logger
 
-from deepwiki.workflow.state import ProcessingStage, DeepWikiState
+from deepwiki.workflow.state import ProcessingStage, CodeFile, DeepWikiState
 from deepwiki.tools.repo_fetcher import fetch
 from deepwiki.tools.code_parser import parse
 from deepwiki.tools.code_analyzer import analyze
@@ -39,17 +39,25 @@ async def parse_code(state: DeepWikiState) -> DeepWikiState:
     state["stage"] = ProcessingStage.PARSING
 
     try:
+        codefiles_parsed: list = []
         repo = state["repository"]
-        parsed_file = []
         for file_path in repo.files:
             if should_parse_file(file_path):
-                parsed = await parse(file_path, repo.local_path)
-                if parsed:
-                    parsed_file.append(parsed)
-                    await vector_store.add_code_file(parsed)
+                parsed_result: dict = await parse(file_path, repo.local_path)
+
+                # Convert parsed result to CodeFile model
+                codefile_parsed = CodeFile(
+                    path=parsed_result["path"],
+                    content=parsed_result["content"],
+                    language=parsed_result["language"],
+                    classes=parsed_result["classes"],
+                    functions=parsed_result["functions"]
+                )
+
+                codefiles_parsed.append(codefile_parsed)
         
-        state["repository"].files = parsed_file
-        logger.info(f"Parsed {len(parsed_file)} code files")
+        state["repository"].files = codefiles_parsed
+        logger.info(f"Parsed {len(codefiles_parsed)} code files")
     
     except Exception as e:
         logger.error(f"Error parsing code files: {e}")

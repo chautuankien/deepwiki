@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # LLM settings for local inference
     use_local: bool = Field(False, description="Use local LLM")
-    local_model_path: str = Field(None, description="Path to the local model directory")
+    local_model_path: str = Field("", description="Path to the local model directory")
 
 
     # Repository settings
@@ -40,5 +40,11 @@ class Settings(BaseSettings):
         [".lock", ".log", ".tmp", ".cache", ".gitignore"],
         description="File extensions to exclude from processing"
     )
+
+    # Language model
+    LANGUAGE_MAP: dict[str, str] = {
+        ".py": "python",
+        ".java": "java",
+    }
 
 settings = Settings()
