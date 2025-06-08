@@ -6,6 +6,6 @@ class BaseLanguageParser(ABC):
     """
 
     @abstractmethod
-    def parse(self, content: str) -> tuple[list[str], list[str]]:
+    def get_functions_and_classes(self, content: str) -> tuple[list[str], list[str]]:
         """Parse code and return structured data."""
         pass
